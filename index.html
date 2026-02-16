@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Year Celebration Portal</title>
+    <style>
+        :root {
+            /* CNY Color Palette */
+            --bg-red-deep: #8E0E00;
+            --bg-red-light: #cb2d3e;
+            --gold-accent: #FFD700;
+            --gold-muted: #cfa300;
+            --text-cream: #fffce0;
+            --glass-warm: rgba(142, 14, 0, 0.5);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-red-deep), var(--bg-red-light));
+            color: var(--text-cream);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            transition: all 0.8s ease;
+        }
+
+        /* --- Victory Background Layers --- */
+        #victory-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            opacity: 0; /* Hidden by default */
+            pointer-events: none;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        /* Replace these URLs with your actual images */
+        .bg-slide-1 { background-image: url('img/petch-cny.png'); }
+        .bg-slide-2 { background-image: url('img/petch-cny.png'); animation-delay: 10s; }
+
+        .bg-slide {
+            position: absolute;
+            top: 100; left: 0; width: 100%; height: 100%;
+            background-size: cover;
+            background-position: center 22%;
+            opacity: 0;
+        }
+
+        /* State changed by JS */
+        body.celebrate-mode #victory-bg { opacity: 1; }
+        
+        /* Triggers the Ken Burns animation only when celebrate mode is active */
+        body.celebrate-mode .bg-slide {
+            animation: kenburns 20s infinite alternate linear;
+        }
+
+        @keyframes kenburns {
+            0% { opacity: 0; transform: scale(1); }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { opacity: 0; transform: scale(1.2); }
+        }
+
+        /* --- Main UI Container --- */
+        .container {
+            background: var(--glass-warm);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 2px solid var(--gold-muted);
+            padding: 3rem 2.5rem;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255, 215, 0, 0.2);
+            text-align: center;
+            width: 90%;
+            max-width: 420px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Decorative CNY Corners (Abstract Lanterns) */
+        .container::before, .container::after {
+            content: '';
+            position: absolute;
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--gold-accent) 10%, var(--bg-red-deep) 70%);
+            opacity: 0.6;
+            z-index: -1;
+        }
+        .container::before { top: -30px; left: -30px; box-shadow: 0 0 30px var(--gold-accent);}
+        .container::after { top: -30px; right: -30px; box-shadow: 0 0 30px var(--gold-accent);}
+
+
+        h1 {
+            font-weight: 400;
+            letter-spacing: 1px;
+            margin-bottom: 2rem;
+            color: var(--gold-accent);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 1.2rem;
+            border-radius: 50px; /* Rounded for friendliness */
+            border: 2px solid var(--gold-muted);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-cream);
+            box-sizing: border-box;
+            outline: none;
+            text-align: center;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        input::placeholder { color: rgba(255, 252, 224, 0.6); }
+        input:focus {
+            border-color: var(--gold-accent);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 15px var(--gold-accent);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 50px;
+            border: none;
+            /* Gold Gradient Button */
+            background: linear-gradient(to right, var(--gold-muted), var(--gold-accent), var(--gold-muted));
+            background-size: 200% auto;
+            color: var(--bg-red-deep);
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        button:hover {
+            background-position: right center;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.5);
+        }
+
+        #result {
+            margin-top: 2rem;
+            display: none; /* Hidden by default */
+            background: rgba(255,215,0, 0.1);
+            padding: 15px;
+            border-radius: 20px;
+            border: 1px solid var(--gold-accent);
+            animation: popUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        #result p { margin: 0 0 10px 0; color: var(--gold-accent); }
+
+        a {
+            color: var(--text-cream);
+            text-decoration: none;
+            font-weight: bold;
+            border-bottom: 2px dotted var(--gold-accent);
+            transition: all 0.3s;
+        }
+        
+        a:hover { color: var(--gold-accent); border-bottom-style: solid;}
+
+        @keyframes popUp {
+            from { opacity: 0; transform: scale(0.8) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        
+        /* Simple shake animation for error */
+        .shake { animation: shake 0.5s; }
+        @keyframes shake {
+          0% { transform: translateX(0); }
+          25% { transform: translateX(-10px); }
+          50% { transform: translateX(10px); }
+          75% { transform: translateX(-10px); }
+          100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="victory-bg">
+        <div class="bg-slide bg-slide-1"></div>
+        <div class="bg-slide bg-slide-2"></div>
+    </div>
+
+    <div class="container" id="mainBox">
+        <h1>ดีปีมัยจีง<br><span style="font-size: 0.7em; opacity: 0.8">Enter Wish Code</span></h1>
+        
+        <input type="password" id="passwordInput" placeholder="Type secret password here...">
+        <button onclick="verify()" id="unlockBtn">Receive Fortune</button>
+
+        <div id="result">
+            <p>✨ May wealth flow in! ✨</p>
+            <a id="secretLink" href="#" target="_blank">Open your lucky envelope →</a>
+        </div>
+    </div>
+
+    <script>
+
+        // Generate new hashes here: https://passwordsgenerator.net/sha256-hash-generator/
+        const VAULT_HASH = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08";
+        
+        // Encoded link (e.g., a festive YouTube video)
+        const ENCODED_LINK = "aHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj01ZVp2T1l1clZGOA=="; 
+
+        const mainBox = document.getElementById('mainBox');
+        const passwordInput = document.getElementById('passwordInput');
+
+        async function verify() {
+            const inputStr = passwordInput.value;
+            
+            // Basic UI feedback during processing
+            const btn = document.getElementById('unlockBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "Checking fortunes...";
+            btn.disabled = true;
+
+            const hashedInput = await sha256(inputStr);
+
+            if (hashedInput === VAULT_HASH) {
+                // --- SUCCESS STATE ---
+                const link = atob(ENCODED_LINK);
+                const resultDiv = document.getElementById('result');
+                document.getElementById('secretLink').href = link;
+                
+                // 1. Reveal the link container with popUp animation
+                resultDiv.style.display = 'block';
+                
+                // 2. Trigger the background animation by adding class to Body
+                document.body.classList.add('celebrate-mode');
+                
+                // 3. Hide input elements smoothly
+                passwordInput.style.display = 'none';
+                btn.style.display = 'none';
+                document.querySelector('h1').innerText = "Wish Granted!";
+
+            } else {
+                // --- ERROR STATE ---
+                mainBox.classList.add('shake');
+                // Remove shake class after animation finishes so it can be triggered again
+                setTimeout(() => mainBox.classList.remove('shake'), 500);
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+
+            // Reset button state (only matters on error, as it's hidden on success)
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+
+        // Standard SHA-256 Hashing Function (Same as before)
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Allow pressing "Enter" to submit
+        passwordInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                verify();
+            }
+        });
+    </script>
+</body>
+</html>

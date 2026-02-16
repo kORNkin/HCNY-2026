@@ -46,7 +46,7 @@
             position: absolute;
             top: 100; left: 0; width: 100%; height: 100%;
             background-size: cover;
-            background-position: center 22%;
+            background-position: center 25%;
             opacity: 0;
         }
 
@@ -210,6 +210,8 @@
         Your browser does not support the audio element.
     </audio>
 
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <script>
 
         // Generate new hashes here: https://passwordsgenerator.net/sha256-hash-generator/
@@ -266,6 +268,10 @@
                 btn.style.display = 'none';
                 document.querySelector('h1').innerText = "Wish Granted!";
 
+                fireConfetti();
+                fireConfetti2();
+                document.body.classList.add('celebrate-mode');
+
             } else {
                 // --- ERROR STATE ---
                 mainBox.classList.add('shake');
@@ -278,6 +284,68 @@
             // Reset button state (only matters on error, as it's hidden on success)
             btn.innerText = originalText;
             btn.disabled = false;
+        }
+
+        function fireConfetti() {
+            const duration = 5 * 1000; // 5 seconds of confetti
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000, colors: ['#FFD700', '#8E0E00', '#ffffff', '#cb2d3e'] };
+
+            function randomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+            const timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            const particleCount = 50 * (timeLeft / duration);
+            
+            // Fire from the left side
+            confetti({
+                ...defaults,
+                particleCount,
+                origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+            });
+            
+            // Fire from the right side
+            confetti({
+                ...defaults,
+                particleCount,
+                origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+            });
+            }, 250);
+        }
+
+        function fireConfetti2() {
+            const colors = ['#FFD700', '#8E0E00', '#ffffff', '#cb2d3e'];
+
+            // This creates a recursive loop
+            (function frame() {
+                // Launch a "burst" from the left
+                confetti({
+                    particleCount: 2,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: colors
+                });
+                
+                // Launch a "burst" from the right
+                confetti({
+                    particleCount: 2,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: colors
+                });
+
+                // Request the next frame to keep it looping
+                requestAnimationFrame(frame);
+            }());
         }
 
         // Standard SHA-256 Hashing Function (Same as before)

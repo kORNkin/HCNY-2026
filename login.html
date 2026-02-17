@@ -184,6 +184,38 @@
           75% { transform: translateX(-10px); }
           100% { transform: translateX(0); }
         }
+
+        .easterEgg-2{
+            left: 20px;
+        }
+
+        .easterEgg-1 {
+            right: 20px;    
+        }
+        .easterEgg {
+            position: fixed;
+            bottom: 25px;   /* Distance from bottom */
+            opacity: 0;
+            pointer-events: none; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Added a little "pop" effect */
+            text-decoration: none;
+            font-size: 1.8rem;
+            z-index: 9999; 
+            cursor: pointer;
+            user-select: none; /* Prevents user from accidentally highlighting the text */
+        }
+        /* 1. Reveal it (dimly) when the password is correct */
+        body.celebrate-mode .easterEgg {
+            opacity: 0.6;
+            pointer-events: auto; /* Enable clicking */
+        }
+
+        /* 2. THE FIX: Target the hover state specifically when it's revealed */
+        body.celebrate-mode .easterEgg:hover {
+            opacity: 1 !important; /* Force visibility */
+            transform: scale(1.3);
+            filter: drop-shadow(0 0 10px #FFD700); /* Gold glow */
+        }
     </style>
 </head>
 <body>
@@ -200,10 +232,13 @@
         <button onclick="verify()" id="unlockBtn">Receive Fortune</button>
 
         <div id="result">
-            <p>✨ May wealth flow in! ✨</p>
-            <a id="secretLink" href="#" target="_blank">Open your lucky envelope →</a>
+            <p id="statusMessage">✨ May wealth flow in! ✨</p>
+            <a id="secretLink" href="#" target="_blank" onclick="handleEnvelopeClick(event)">Open your lucky envelope →</a>
         </div>
     </div>
+
+    <a class="easterEgg easterEgg-1" id="easterEgg1" href="https://www.youtube.com/watch?v=uf8F97ONQbc" target="_blank" title="Secret Path">🧧</a>
+    <a class="easterEgg easterEgg-2" id="easterEgg2" href="#" target="_blank" title="Secret Path">🧧</a>
 
     <audio id="celebrationSong" loop>
         <source src="song/chinese-song.mp3" type="audio/mpeg">
@@ -215,10 +250,16 @@
     <script>
 
         // Generate new hashes here: https://passwordsgenerator.net/sha256-hash-generator/
-        const VAULT_HASH = "ee587a618130c5f6ca0071d1b140377916d5a460e21fcc248383181f319bd34c";
+        const VAULT_HASH = "73dcd0954e36f849c34332328c5af3e5b1b0040a7a85125e1d01ae4578867b90";
         
         // Encoded link (e.g., a festive YouTube video)
         const ENCODED_LINK = "aHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj1kUXc0dzlXZ1hjUSZsaXN0PVJEZFF3NHc5V2dYY1Emc3RhcnRfcmFkaW89MQo="; 
+
+        // Keep your real encoded link here
+        const REAL_LINK_ENCODED = "aHR0cHM6Ly95b3V0dS5iZS9QSjVEeUwzTkpiYz9zaT1qXzBFajN2ZldoU0czQUNF"; 
+        const REAL_LINK2_ENCODED = "aHR0cHM6Ly93d3cuaW5zdGFncmFtLmNvbS8="; 
+        const FAKE_LINK2_ENCODED = "aHR0cHM6Ly95b3V0dS5iZS9DSjcyYnlleWVCdz9zaT0zQktvYmRiMVJGSS1qV1FnCg=="; 
+        const FAKE_LINK = "https://youtu.be/dQw4w9WgXcQ?si=I9wUVdgl0EZPAJtb";
 
         const mainBox = document.getElementById('mainBox');
         const passwordInput = document.getElementById('passwordInput');
@@ -267,6 +308,9 @@
                 passwordInput.style.display = 'none';
                 btn.style.display = 'none';
                 document.querySelector('h1').innerText = "Wish Granted!";
+
+                const realURL = atob(REAL_LINK2_ENCODED); // Decode the link
+                document.getElementById('easterEgg2').href = realURL;
 
                 fireConfetti();
                 fireConfetti2();
@@ -322,30 +366,101 @@
 
         function fireConfetti2() {
             const colors = ['#FFD700', '#8E0E00', '#ffffff', '#cb2d3e'];
+            let frameCount = 0;
+            const frameSkip = 1; // Increase this number to decrease confetti even more (try 20 or 30)
 
-            // This creates a recursive loop
             (function frame() {
-                // Launch a "burst" from the left
-                confetti({
-                    particleCount: 2,
-                    angle: 60,
-                    spread: 55,
-                    origin: { x: 0 },
-                    colors: colors
-                });
-                
-                // Launch a "burst" from the right
-                confetti({
-                    particleCount: 2,
-                    angle: 120,
-                    spread: 55,
-                    origin: { x: 1 },
-                    colors: colors
-                });
+                // Only fire every 'frameSkip' frames
+                if (frameCount % frameSkip === 0) {
+                    confetti({
+                        particleCount: 1, // Minimum amount per burst
+                        angle: 60,
+                        spread: 45,
+                        origin: { x: 0, y: 0.7 },
+                        colors: colors,
+                        gravity: 0.8, // Slightly lower gravity makes it float longer
+                        scalar: 0.8   // Smaller particles look "lighter"
+                    });
+                    
+                    confetti({
+                        particleCount: 1,
+                        angle: 120,
+                        spread: 45,
+                        origin: { x: 1, y: 0.7 },
+                        colors: colors,
+                        gravity: 0.8,
+                        scalar: 0.8
+                    });
+                }
 
-                // Request the next frame to keep it looping
+                frameCount++;
                 requestAnimationFrame(frame);
             }());
+        }
+
+        let clickCount = 0;
+
+        function handleEnvelopeClick(event) {
+            const linkElement = document.getElementById('secretLink');
+            const statusText = document.getElementById('statusMessage');
+            
+            clickCount++;
+
+            if (clickCount % 3 == 1) {
+                // --- FIRST CLICK: OPEN FAKE & STAY ON PAGE ---
+                event.preventDefault(); // Stop the current tab from moving
+                
+                // Open the fake link in a NEW tab
+                window.open(FAKE_LINK, '_blank');
+
+                // Update the UI to show they "failed" the first time
+                statusText.innerText = (clickCount % 4 == 1) ? "🧧 เมื่อกี้ทดสอบลิ้งค์เฉย ๆ อันนี้ของจริงล่ะ..." : "🧧 ดูดี ๆ ลิ้งอยู่ไหน";
+                statusText.style.color = "#FFD700";
+                linkElement.innerText = "Claim your NOT FAKE fortune now →";
+                
+                // Visual feedback
+                document.getElementById('mainBox').classList.add('shake');
+                setTimeout(() => document.getElementById('mainBox').classList.remove('shake'), 500);
+
+            } else if (clickCount % 3 == 2) {
+                event.preventDefault(); // Stop the current tab from moving
+                
+                // Open the fake link in a NEW tab
+                window.open(atob(REAL_LINK_ENCODED), '_blank');
+                
+
+                // Update the UI to show they "failed" the first time
+                statusText.innerText = (clickCount % 5 == 0) ? "🧧 อยู่ด้านล่างครับ" : "🧧 อันนี้ของจริง! รับพรกันถ้วนหน้า";
+                statusText.style.color = "#FFD700";
+                linkElement.innerText = "Claim your REAL fortune now →";
+                
+                // Visual feedback
+                document.getElementById('mainBox').classList.add('shake');
+                setTimeout(() => document.getElementById('mainBox').classList.remove('shake'), 500);
+
+                // Prepare the real link for the next click
+                linkElement.href = atob(FAKE_LINK2_ENCODED); 
+            } else if (clickCount % 3 == 0) {
+                event.preventDefault(); // Stop the current tab from moving
+                
+                // Open the fake link in a NEW tab
+                window.open("img/petch-cny.png", '_blank');
+                statusText.innerText = "🧧 หลอกง่ายเนอะ อันนี้ของจริงล่ะ...";
+                statusText.style.color = "#FFD700";
+                linkElement.innerText = "Open your lucky envelope →";
+                
+                // Visual feedback
+                document.getElementById('mainBox').classList.add('shake');
+                setTimeout(() => document.getElementById('mainBox').classList.remove('shake'), 500);
+            } 
+
+            // else {
+            //     // --- SECOND CLICK: OPEN REAL ---
+            //     // We do nothing here! 
+            //     // Since we updated linkElement.href in the previous step, 
+            //     // the browser will naturally open the real link now.
+            //     statusText.innerText = "🎊 Success! Opening your true destiny...";
+            // }
         }
 
         // Standard SHA-256 Hashing Function (Same as before)

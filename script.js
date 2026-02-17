@@ -5,8 +5,8 @@ const jackpot = document.getElementById('jackpot');
 const img = new Image();
 img.src = 'img/01.jpg'; // Update to your gambling image
 
-const rows = 2; 
-const cols = 3;
+const rows = 4; 
+const cols = 5;
 let pieces = [];
 let selectedPiece = null;
 let isSolved = false;
